@@ -3,7 +3,11 @@ import json
 
 import boto3
 import botocore
+from datetime import datetime, tzinfo
+from dateutil import tz
 from botocore.config import Config
+
+OLD_RESOURCE_DATETIME = datetime(2021, 1, 1, tzinfo=tz.tzutc())
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--region", action="store", type=str, required=True)
@@ -30,6 +34,10 @@ def get_template(stack_id):
     return client.get_template(StackName=stack_id)
 
 
+def old_resource(resource):
+    return resource["LastUpdatedTimestamp"] <= OLD_RESOURCE_DATETIME
+
+
 try:
     stack_summaries = client.list_stacks().get("StackSummaries")
 except botocore.exceptions.ClientError as e:
@@ -44,12 +52,19 @@ for stack_id in stack_ids:
         "StackResourceSummaries"
     )
 
+    old_stack_resources = [
+        resource for resource in stack_resources if old_resource(resource)
+    ]
+
     templates = [
         get_template(stack_id)["TemplateBody"]
-        for resource in stack_resources
+        for resource in old_stack_resources
         if has_custom_resource(resource)
     ]
 
     for template in templates:
         if "python" in template:
             print(f"{stack_id}")
+
+# if __name__ == "__main__":
+#     pass
