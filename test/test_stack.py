@@ -1,10 +1,9 @@
-import os
+from os import environ, path
 
-import boto3
 import pytest
 from cfnresponsechecker.assume_role import Roles
 
-ROLE_NAME = ""
+ROLE_NAME = environ.get("AWS_ROLE_NAME")
 
 
 def parse_arn(arn):
@@ -12,8 +11,8 @@ def parse_arn(arn):
     return {"arn": elements[0], "region": elements[3], "account": elements[4]}
 
 
-directory = os.path.dirname(os.path.abspath(__file__))
-file = os.path.join(directory, "stacks.txt")
+directory = path.dirname(path.abspath(__file__))
+file = path.join(directory, "stacks.txt")
 with open(file, "r") as reader:
     stack_ids = [x.strip() for x in reader.readlines() if x[0] != "#"]
 

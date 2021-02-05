@@ -47,7 +47,12 @@ python3 cross_accounts.py --role-name ${ROLE_NAME} \
 ## Testing
 
 1. Copy your problem stack ids (full arn) into /test/stacks.txt, one line per stack.
-2. Add your Role Name to test/test_stack.py.
+2. export your role name to AWS_ROLE_NAME
+
+```
+export AWS_ROLE_NAME=myRoleName
+```
+
 3. Then run pytest to test your stacks programatically after you've fixed them.
 
 ```
