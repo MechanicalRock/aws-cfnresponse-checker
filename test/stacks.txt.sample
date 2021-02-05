@@ -1,0 +1,2 @@
+Replace with one stack id per line
+arn:aws:cloudformation:us-east-1:111111111111:stack/StackSet-My-Stack-Name-ffffffff-ffff-ffff-ffff-ffffffffffff/ffffffff-ffff-ffff-ffff-ffffffffffff

@@ -1,45 +1,67 @@
 import boto3
-import botocore
 from botocore.config import Config
-import argparse
 
-from stacks import Stacks
+from cfnresponsechecker.stacks import Stacks
 
-# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-api.html
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--role", action="store", type=str, required=True)
-parser.add_argument("--regions", action="store", type=str, required=False)
+class Roles:
+    def __init__(self, role):
+        sts_client = boto3.client("sts")
+        assumed_role_object = sts_client.assume_role(
+            RoleArn=role,
+            RoleSessionName="cfnresponseCheck",
+        )
+        self.credentials = assumed_role_object["Credentials"]
 
-args = parser.parse_args()
-role = args.role
+    def get_problem_stacks(self, region):
+        config = Config(region_name=region)
+        client = boto3.client(
+            "cloudformation",
+            config=config,
+            aws_access_key_id=self.credentials["AccessKeyId"],
+            aws_secret_access_key=self.credentials["SecretAccessKey"],
+            aws_session_token=self.credentials["SessionToken"],
+        )
+        stack = Stacks(client)
+        return stack.get_problem_stacks()
 
-if args.regions:
-    regions = args.regions.split(",")
-else:
-    ec2_client = boto3.client("ec2")
-    regions = [
-        region["RegionName"] for region in ec2_client.describe_regions()["Regions"]
-    ]
+    def test_stack(self, region, stack_id):
+        config = Config(region_name=region)
+        client = boto3.client(
+            "cloudformation",
+            config=config,
+            aws_access_key_id=self.credentials["AccessKeyId"],
+            aws_secret_access_key=self.credentials["SecretAccessKey"],
+            aws_session_token=self.credentials["SessionToken"],
+        )
+        stack = Stacks(client)
+        return stack.test_stack(stack_id)
 
-sts_client = boto3.client("sts")
-# Call the assume_role method of the STSConnection object and pass the role
-# ARN and a role session name.
-assumed_role_object = sts_client.assume_role(
-    RoleArn=role,
-    RoleSessionName="cfnresponseCheck",
-)
 
-credentials = assumed_role_object["Credentials"]
+if __name__ == "__main__":
+    import argparse
 
-for region in regions:
-    config = Config(region_name=region)
-    client = boto3.client(
-        "cloudformation",
-        config=config,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    )
-    stack = Stacks(client)
-    stack.get_stack_resources()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--role", action="store", type=str, required=True)
+    parser.add_argument("--regions", action="store", type=str, required=False)
+
+    args = parser.parse_args()
+    role = args.role
+
+    if args.regions:
+        regions = args.regions.split(",")
+    else:
+        ec2_client = boto3.client("ec2")
+        regions = [
+            region["RegionName"] for region in ec2_client.describe_regions()["Regions"]
+        ]
+
+    roles = Roles(role)
+    for region in regions:
+        print(f"Region {region}")
+        problem_stacks = role.get_problem_stacks(region)
+        if problem_stacks:
+            for stack in problem_stacks:
+                print(stack)
+        else:
+            print("None Found")
