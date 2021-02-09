@@ -29,7 +29,8 @@ class Stacks:
     def _old_resource(self, resource):
         old = resource["LastUpdatedTimestamp"] <= self.old_resource_datetime
         deleted = resource["ResourceStatus"] == "DELETE_COMPLETE"
-        return old and not deleted
+        function = resource["ResourceType"] == "AWS::Lambda::Function"
+        return old and function and not deleted
 
     def _get_stack_resources(self, stack_id):
         try:
@@ -56,14 +57,17 @@ class Stacks:
         if stack_resources == None:
             return
 
-        old_stack_resources = [
-            resource for resource in stack_resources if self._old_resource(resource)
+        custom_resources = [
+            resource
+            for resource in stack_resources
+            if self._has_custom_resource(resource)
         ]
-
+        old_stack_resources = [
+            resource for resource in custom_resources if self._old_resource(resource)
+        ]
         templates = [
             self._get_template(stack_id)["TemplateBody"]
             for resource in old_stack_resources
-            if self._has_custom_resource(resource)
         ]
 
         for template in templates:

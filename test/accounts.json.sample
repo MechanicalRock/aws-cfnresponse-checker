@@ -1,0 +1,12 @@
+[
+  {
+    "account_id": "111111111111",
+    "regions": ["us-east-1", "us-east-2", "ap-southeast-2"],
+    "role_name": "MyRoleForAccount"
+  },
+  {
+    "account_id": "222222222222",
+    "regions": ["us-east-1", "us-east-2"],
+    "role_name": "MyRoleForAccount"
+  }
+]

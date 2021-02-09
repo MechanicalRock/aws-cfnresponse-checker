@@ -131,3 +131,4 @@ dmypy.json
 .vscode/settings.json
 test/stacks.txt
 .vscode/launch.json
+test/accounts.json

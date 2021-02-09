@@ -38,6 +38,18 @@ class Roles:
         return stack.test_stack(stack_id)
 
 
+def main(role, regions):
+    roles = Roles(role)
+    for region in regions:
+        print(f"Region {region}")
+        problem_stacks = role.get_problem_stacks(region)
+        if problem_stacks:
+            for stack in problem_stacks:
+                print(stack)
+        else:
+            print("None Found")
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -56,12 +68,4 @@ if __name__ == "__main__":
             region["RegionName"] for region in ec2_client.describe_regions()["Regions"]
         ]
 
-    roles = Roles(role)
-    for region in regions:
-        print(f"Region {region}")
-        problem_stacks = role.get_problem_stacks(region)
-        if problem_stacks:
-            for stack in problem_stacks:
-                print(stack)
-        else:
-            print("None Found")
+    main(role, regions)
