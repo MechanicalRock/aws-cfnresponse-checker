@@ -27,7 +27,7 @@ python3 single_account.py --role-arn 'arn:aws:iam::${ROLE_ID}:role/${ROLE_NAME}'
   --clean-print
 ```
 
-> Region is optional, default is all regions
+> Regions is optional, default is all regions
 
 > Remove `--clean-print` to print region
 
@@ -40,9 +40,21 @@ python3 cross_accounts.py --role-name ${ROLE_NAME} \
  --clean-print
 ```
 
-> Region is optional, default is all regions.
+> Regions is optional, default is all regions.
 
 > Accounts is optional, will get all organization accounts by default.
+
+> Remove `--clean-print` to print accounts and regions
+
+4. For Principle Account Checking
+
+```bash
+python3 principle_account.py \
+ --regions us-east-1,ap-southeast-2 \
+ --clean-print
+```
+
+> Regions is optional, default is all regions.
 
 > Remove `--clean-print` to print accounts and regions
 

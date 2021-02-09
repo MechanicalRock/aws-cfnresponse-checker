@@ -15,9 +15,8 @@ def main(regions, role_name, accounts, clean_print=False):
             if problem_stacks:
                 for stack in problem_stacks:
                     print(stack)
-            else:
-                if not clean_print:
-                    print("None Found")
+            elif not clean_print:
+                print("None Found")
 
 
 if __name__ == "__main__":
