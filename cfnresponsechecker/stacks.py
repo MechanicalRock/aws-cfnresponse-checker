@@ -1,6 +1,9 @@
-import botocore
 from datetime import datetime
+
+import botocore
 from dateutil import tz
+
+from cfnresponsechecker.utils import paginator
 
 OLD_RESOURCE_DATETIME = datetime(2020, 11, 23, tzinfo=tz.tzutc())
 
@@ -34,23 +37,20 @@ class Stacks:
 
     def _get_stack_resources(self, stack_id):
         try:
-            paginator = self.client.get_paginator("list_stack_resources")
-            pages = paginator.paginate(StackName=stack_id)
-            return [
-                item for sublist in pages for item in sublist["StackResourceSummaries"]
-            ]
+            return paginator(
+                self.client,
+                "list_stack_resources",
+                "StackResourceSummaries",
+                {"StackName": stack_id},
+            )
         except botocore.exceptions.ClientError as e:
             print(e)
-            return
 
     def _get_stack_summaries(self):
         try:
-            paginator = self.client.get_paginator("list_stacks")
-            pages = paginator.paginate()
-            return [item for sublist in pages for item in sublist["StackSummaries"]]
+            return paginator(self.client, "list_stacks", "StackSummaries")
         except botocore.exceptions.ClientError as e:
             print(e)
-            return
 
     def test_stack(self, stack_id):
         stack_resources = self._get_stack_resources(stack_id)
@@ -62,8 +62,11 @@ class Stacks:
             for resource in stack_resources
             if self._has_custom_resource(resource)
         ]
+        if len(custom_resources) == 0:
+            return False
+
         old_stack_resources = [
-            resource for resource in custom_resources if self._old_resource(resource)
+            resource for resource in stack_resources if self._old_resource(resource)
         ]
         templates = [
             self._get_template(stack_id)["TemplateBody"]
