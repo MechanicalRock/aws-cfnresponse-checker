@@ -8,55 +8,57 @@ Prints the stack id for every stack identified as an issue.
 
 ## Usage
 
-1. Ensure that boto3 installed in a python3 environment
+### Prerequisites
 
-    ```bash
-    pipenv install && pipenv shell
+Ensure that boto3 installed in a python3 environment
 
-    OR
+```bash
+pipenv install && pipenv shell
 
-    # For testing
-    pipenv install --pre --dev
-    ```
+OR
 
-1. For Single Account Checking:
+# For testing
+pipenv install --pre --dev
+```
 
-    ```bash
-    python3 single_account.py --role-arn 'arn:aws:iam::${ROLE_ID}:role/${ROLE_NAME}' \
-      --regions us-east-1,ap-southeast-2 \
-      --clean-print
-    ```
+### Single Account Checking:
 
-    > Regions is optional, default is all regions
-    >
-    > Remove `--clean-print` to print region
+```bash
+python3 single_account.py --role-arn 'arn:aws:iam::${ROLE_ID}:role/${ROLE_NAME}' \
+  --regions us-east-1,ap-southeast-2 \
+  --clean-print
+```
 
-1. For Cross Account Checking
+> Regions is optional, default is all regions
+>
+> Remove `--clean-print` to print region
 
-    ```bash
-    python3 cross_accounts.py --role-name ${ROLE_NAME} \
-    --regions us-east-1,ap-southeast-2 \
-    --accounts 111111111111,222222222222 \
-    --clean-print
-    ```
+### Cross Account Checking
 
-    > Regions is optional, default is all regions.
-    >
-    > Accounts is optional, will get all organization accounts by default.
-    >
-    > Remove `--clean-print` to print accounts and regions
+```bash
+python3 cross_accounts.py --role-name ${ROLE_NAME} \
+--regions us-east-1,ap-southeast-2 \
+--accounts 111111111111,222222222222 \
+--clean-print
+```
 
-1. For Principle Account Checking
+> Regions is optional, default is all regions.
+>
+> Accounts is optional, will get all organization accounts by default.
+>
+> Remove `--clean-print` to print accounts and regions
 
-    ```bash
-    python3 principle_account.py \
-    --regions us-east-1,ap-southeast-2 \
-    --clean-print
-    ```
+### Principle Account Checking
 
-    > Regions is optional, default is all regions.
-    >
-    > Remove `--clean-print` to print accounts and regions
+```bash
+python3 principle_account.py \
+--regions us-east-1,ap-southeast-2 \
+--clean-print
+```
+
+> Regions is optional, default is all regions.
+>
+> Remove `--clean-print` to print accounts and regions
 
 ## Testing
 
@@ -85,35 +87,35 @@ Prints the stack id for every stack identified as an issue.
     ====================== 5 failed, 1 passed in 15.54s ============
     ```
 
-
-
 ## Resolving problem stacks
 
-There's two main methods to update the cfn-response module in your lambda functions.
+There's two main methods to update the cfn-response module in your lambda functions:
 
-- Add a comment to the inline code in your CloudFormation template.
-    ```yaml
-    ZipFile: |
-              import cfnresponse
-              def handler(event, context):
-    +             # This comment was added to force an update on this function's code
-                  responseData = {'Message': 'Hello {}!'.format(event['ResourceProperties']['Name'])}
-                  cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, "CustomResourcePhysicalID")
-    ```
+### Add a comment to the inline code in your CloudFormation template.
 
-- Update the ```Runtime``` Property for the function in your CloudFormation template.
-    ```yaml
-    Handler: index.handler
-      Role: !GetAtt MyRole.Arn
-    - Runtime: python3.6
-    + Runtime: python3.7
-      Code:
-        ZipFile: |
+```yaml
+ZipFile: |
           import cfnresponse
           def handler(event, context):
-            responseData = {'Message': 'Hello {}!'.format(event['ResourceProperties']['Name'])}
-            cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, "CustomResourcePhysicalID")
-    ```
++             # This comment was added to force an update on this function's code
+              responseData = {'Message': 'Hello {}!'.format(event['ResourceProperties']['Name'])}
+              cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, "CustomResourcePhysicalID")
+```
+
+### Update the ```Runtime``` Property for the function in your CloudFormation template.
+
+```yaml
+Handler: index.handler
+  Role: !GetAtt MyRole.Arn
+- Runtime: python3.6
++ Runtime: python3.7
+  Code:
+    ZipFile: |
+      import cfnresponse
+      def handler(event, context):
+        responseData = {'Message': 'Hello {}!'.format(event['ResourceProperties']['Name'])}
+        cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, "CustomResourcePhysicalID")
+```
 
 Then after updating your templates, run the tests again to see if your account still has stale inline CloudFormation response lambdas.
 
