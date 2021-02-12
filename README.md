@@ -1,14 +1,17 @@
 # aws-cfnresponse-checker
 
-Checks aws accounts for custom cloud formation resources that need updating.
+AWS announced [breaking changes to the Python SDK](https://aws.amazon.com/blogs/compute/upcoming-changes-to-the-python-sdk-in-aws-lambda/) that may require action before March 31 2021.
+
+`aws-cfnresponse-checker` is a command line tool to check AWS accounts for custom cloud formation resources that need updating.
+
+There are two modes:
+ * Using [AssumeRole](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.html) and temporary credentials: intended for [multi account](https://aws.amazon.com/blogs/industries/defining-an-aws-multi-account-strategy-for-telecommunications-companies/) environments
+ * Using [environment credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html): intended for single accounts or testing purposes.
 
 Run these scripts from an environment with the correct permissions to assume the account's role and perform read only operations on Cloudformation.
 
 Prints the stack id for every stack identified as an issue.
-
-## Usage
-
-### Prerequisites
+## Setup
 
 Ensure that boto3 installed in a python3 environment
 
@@ -21,19 +24,34 @@ OR
 pipenv install --pre --dev
 ```
 
-### Single Account Checking:
+## Usage
 
+### Multi-account (AssumeRole)
+
+#### Pre-requisites
+
+* Cross-account trust must have been configured using [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
+  * The trusting account role should grant read only permissions to CloudFormation, e.g. by applying the [AWS Managed Policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_managed-vs-inline.html#aws-managed-policies) - `AWSCloudFormationReadOnlyAccess`: `arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess`
+* The tool supports auto-discovering accounts using AWS Organizations.  **NOTE**: if you wish to use this functionality, the _trusted account_ needs to be the [root Organizations management account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html)
+* The tool should be run using appropriate [credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) from the _trusted account_
+  * For Control Tower users, consider deploying as a lambda function in the [Audit Account](https://docs.aws.amazon.com/controltower/latest/userguide/how-control-tower-works.html)
+
+
+#### AssumeRole - Single Account Checking:
+
+If you want to test accounts individually:
 ```bash
 python3 single_account.py --role-arn 'arn:aws:iam::${ROLE_ID}:role/${ROLE_NAME}' \
   --regions us-east-1,ap-southeast-2 \
   --clean-print
 ```
 
-> Regions is optional, default is all regions
+> `--regions` is optional, default is all regions
+> `--role-arn` is arn of the role to assume in the _trusting account_
 >
 > Remove `--clean-print` to print region
 
-### Cross Account Checking
+### AssumeRole - Multiple Account Checking:
 
 ```bash
 python3 cross_accounts.py --role-name ${ROLE_NAME} \
@@ -42,13 +60,14 @@ python3 cross_accounts.py --role-name ${ROLE_NAME} \
 --clean-print
 ```
 
-> Regions is optional, default is all regions.
->
-> Accounts is optional, will get all organization accounts by default.
+> `--regions` is optional, default is all regions.
+> `--accounts` is optional, will get all organization accounts by default (**NOTE**: for auto-discovery, it must be run from your [root Organization account](https://docs.aws.amazon.com/organizations/latest/userguide/orgs_getting-started_concepts.html) context).
 >
 > Remove `--clean-print` to print accounts and regions
 
-### Principle Account Checking
+### Using Environment Credentials
+
+Test a single account using your configured [SDK credentials](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html)
 
 ```bash
 python3 principle_account.py \
@@ -56,11 +75,13 @@ python3 principle_account.py \
 --clean-print
 ```
 
-> Regions is optional, default is all regions.
+> `--regions` is optional, default is all regions.
 >
 > Remove `--clean-print` to print accounts and regions
 
 ## Testing
+
+If you are using the `AssumeRole` mechanism, you can configure a test to identify issues and validate that you have fixed any problems
 
 1. Create a `accounts.json` file like so in the tests folder.
 
