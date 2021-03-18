@@ -8,6 +8,9 @@ black = "*"
 pylint = "*"
 pytest = "*"
 rope = "*"
+behave = "*"
+pyyaml = "*"
+cfn-flip = "*"
 
 [packages]
 boto3 = "*"

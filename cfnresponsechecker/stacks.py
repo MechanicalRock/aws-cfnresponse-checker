@@ -44,11 +44,25 @@ class Stacks:
                 {"StackName": stack_id},
             )
         except botocore.exceptions.ClientError as e:
-            print(e)
+            print("Failed to query resources for stack: " + stack_id + ": " + str(e))
 
     def _get_stack_summaries(self):
         try:
-            return paginator(self.client, "list_stacks", "StackSummaries")
+            return paginator(
+                self.client,
+                "list_stacks",
+                "StackSummaries",
+                {
+                    "StackStatusFilter": [
+                        "CREATE_COMPLETE",
+                        "UPDATE_COMPLETE",
+                        "UPDATE_ROLLBACK_FAILED",
+                        "UPDATE_ROLLBACK_COMPLETE",
+                        "IMPORT_ROLLBACK_COMPLETE",
+                        "DELETE_FAILED",
+                    ]
+                },
+            )
         except botocore.exceptions.ClientError as e:
             print(e)
 
@@ -80,6 +94,15 @@ class Stacks:
 
     def get_problem_stacks(self):
         stack_summaries = self._get_stack_summaries()
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
+        print("something special")
         if stack_summaries == None:
             return
         stack_ids = self._get_stack_ids(stack_summaries)
