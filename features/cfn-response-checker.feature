@@ -6,7 +6,18 @@ Scenario: Out of date stack with inline python custom resource
   Then the problem report should return: 
     """ 
     {
-      "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa"]
+      "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa"],
+      "functions": [
+        {
+          "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa",
+          "functions": [
+            {
+              "logicalId": "myCustomResourceLambda",
+              "code": "s3://some-deployment-bucket/uuid-here.zip"
+            }
+          ]
+        }
+      ]
     }
     """
 

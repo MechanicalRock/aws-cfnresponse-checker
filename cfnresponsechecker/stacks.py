@@ -1,4 +1,5 @@
 from datetime import datetime
+import deprecation
 
 import botocore
 from dateutil import tz
@@ -92,14 +93,44 @@ class Stacks:
                 return True
         return False
 
-    def get_problem_stacks(self):
+    # TODO - naming
+    def _get_stack_ids_from_lookup(self):
         stack_summaries = self._get_stack_summaries()
         if stack_summaries == None:
             return
         stack_ids = self._get_stack_ids(stack_summaries)
+        return stack_ids
+
+    def _get_problem_stacks(self,stack_ids):
         return [stack for stack in stack_ids if self.test_stack(stack)]
 
+    @deprecation.deprecated(details="This function has been replaced by get_problem_report() and shall be removed.")
+    def get_problem_stacks(self):
+        stack_ids = self._get_stack_ids_from_lookup()
+        return self._get_problem_stacks(stack_ids)
+
+    def test_functions(self, stack):
+        return True
+
+    def get_problem_functions(self, stack_ids):
+        # TODO - DRY with above
+        todo = [stack for stack in stack_ids if self.test_functions(stack)]
+        # return [
+        #         {
+        #             "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa",
+        #             "functions": [
+        #                 {
+        #                     "logicalId": "myCustomResourceLambda",
+        #                     "code": "s3://some-deployment-bucket/uuid-here.zip",
+        #                 }
+        #             ],
+        #         }
+        #     ]
+        return "not implemented"
+
     def get_problem_report(self):
+        stack_ids = self._get_stack_ids_from_lookup()
         return {
-            "stacks": self.get_problem_stacks()
+            "stacks": self._get_problem_stacks(stack_ids),
+            "functions": self.get_problem_functions(stack_ids),
         }
