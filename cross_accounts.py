@@ -11,7 +11,8 @@ def main(regions, role_name, accounts, clean_print=False):
         for region in regions:
             if not clean_print:
                 print(f"Region {region}")
-            problem_stacks = role.get_problem_stacks(region)
+            #TODO
+            problem_stacks = role.get_problem_report(region)["stacks"]
             if problem_stacks:
                 for stack in problem_stacks:
                     print(stack)

@@ -25,6 +25,19 @@ class Roles:
         stack = Stacks(client)
         return stack.get_problem_stacks()
 
+    def get_problem_report(self,region):
+        config = Config(region_name=region)
+        client = boto3.client(
+            "cloudformation",
+            config=config,
+            aws_access_key_id=self.credentials["AccessKeyId"],
+            aws_secret_access_key=self.credentials["SecretAccessKey"],
+            aws_session_token=self.credentials["SessionToken"],
+        )
+        stack = Stacks(client)
+        return stack.get_problem_report()
+
+
     def test_stack(self, region, stack_id):
         config = Config(region_name=region)
         client = boto3.client(

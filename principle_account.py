@@ -11,7 +11,8 @@ def main(regions, clean_print=False):
         config = Config(region_name=region)
         client = boto3.client("cloudformation", config=config)
         stack = Stacks(client)
-        problem_stacks = stack.get_problem_stacks()
+        # TODO
+        problem_stacks = stack.get_problem_report()['stacks']
         if problem_stacks:
             for stack in problem_stacks:
                 print(stack)
