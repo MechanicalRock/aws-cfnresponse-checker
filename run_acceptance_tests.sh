@@ -1,1 +1,1 @@
-behave --no-capture
+behave

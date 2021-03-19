@@ -95,10 +95,10 @@ def _stub_get_template(stubber, stack_id):
     # template_body_json = json.dumps(template_body)
     template_body_json = template_body
 
-    
+
     expected_params = {"StackName": stack_id}
     mock_response = {
-        "TemplateBody": template_body_json,
+        "TemplateBody": json.dumps(template_body_json),
         "StagesAvailable": ["Original", "Processed"],
         "ResponseMetadata": {
             "RequestId": "a31f5380-73ad-4f7f-a440-aaaaaaaaaa",

@@ -4,7 +4,7 @@ from features.test_data.out_of_date_stack.mocked_responses import stub
 
 from cfnresponsechecker.utils import paginator
 from cfnresponsechecker.stacks import Stacks
-
+import json
 
 def test_mocks():
   """
@@ -40,4 +40,6 @@ def _test_stack_resources(stack, stack_id):
 def _test_template_body(stack, stack_id):
   template_response = stack._get_template(stack_id)
   print(template_response)
-  assert template_response["TemplateBody"]['Resources']['CustomResourceCube']['Type'] == 'Custom::Multiplier' 
+  template_body = template_response["TemplateBody"]
+  assert isinstance(template_body, str)
+  assert (json.loads(template_body))['Resources']['CustomResourceCube']['Type'] == 'Custom::Multiplier' 

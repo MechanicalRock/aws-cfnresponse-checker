@@ -94,16 +94,12 @@ class Stacks:
 
     def get_problem_stacks(self):
         stack_summaries = self._get_stack_summaries()
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
-        print("something special")
         if stack_summaries == None:
             return
         stack_ids = self._get_stack_ids(stack_summaries)
         return [stack for stack in stack_ids if self.test_stack(stack)]
+
+    def get_problem_report(self):
+        return {
+            "stacks": self.get_problem_stacks()
+        }
