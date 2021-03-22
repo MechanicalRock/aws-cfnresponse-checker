@@ -31,7 +31,11 @@ class Stacks:
             or "Custom::" in resource["ResourceType"]
         )
 
-    def _get_template(self, stack_id):
+    def _adapt_template(self, stack_id):
+        """
+        Adapter: query AWS for the template body for the given stack.
+        @returns The parsed template body as a dict ({key:value})
+        """
         # https://github.com/boto/botocore/issues/1889
         # Ensure that the TemplateBody is parsed.
         # Difference in behaviour between YAML and JSON :(
@@ -39,7 +43,7 @@ class Stacks:
         try:
             parsed_template, _ = load(template_response['TemplateBody'])
             template_response['TemplateBody'] = parsed_template
-        except TypeError as e:
+        except TypeError as _:
             logging.debug("Ignoring TypeError parsing TemplateBody - assuming it is already parsed JSON") 
         return template_response
 
@@ -70,14 +74,20 @@ class Stacks:
         ]
         return resources
 
-    def get_templates_for_stack_ids(self, stack_ids):
+    def _adapt_templates_for_stack_ids(self, stack_ids):
+        """
+        Adapter: query AWS for templates for the given stack ids
+        """
         templates = [
-            {"stackId": stack_id, "template": self._get_template(stack_id)}
+            {"stackId": stack_id, "template": self._adapt_template(stack_id)}
             for stack_id in stack_ids
         ]
         return templates
 
-    def _get_stack_summaries(self):
+    def _adapt_stack_summaries_from_aws(self):
+        """
+        Adapter: query stack summaries from AWS
+        """
         try:
             return paginator(
                 self.client,
@@ -97,34 +107,34 @@ class Stacks:
         except botocore.exceptions.ClientError as e:
             print(e)
 
-    def _has_outdated_custom_resources(self, stack_info):
-        stack_id = stack_info["stackId"]
-        stack_resources = stack_info["resources"]
-        # backward compatability
-        template_body = json.dumps(stack_info["templateBody"])
+    # def _has_outdated_custom_resources(self, stack_info):
+    #     stack_id = stack_info["stackId"]
+    #     stack_resources = stack_info["resources"]
+    #     # backward compatability
+    #     template_body = json.dumps(stack_info["templateBody"])
 
-        if stack_resources == None:
-            logging.debug(f"No resources found for {stack_id}")
-            return
+    #     if stack_resources == None:
+    #         logging.debug(f"No resources found for {stack_id}")
+    #         return
 
-        custom_resources = [
-            resource
-            for resource in stack_resources
-            if self._has_custom_resource(resource)
-        ]
-        if len(custom_resources) == 0:
-            return False
+    #     custom_resources = [
+    #         resource
+    #         for resource in stack_resources
+    #         if self._has_custom_resource(resource)
+    #     ]
+    #     if len(custom_resources) == 0:
+    #         return False
 
-        old_stack_resources = [
-            resource
-            for resource in stack_resources
-            if self._out_of_date_lambda_function(resource)
-        ]
+    #     old_stack_resources = [
+    #         resource
+    #         for resource in stack_resources
+    #         if self._out_of_date_lambda_function(resource)
+    #     ]
 
-        if len(old_stack_resources) == 0:
-            return False
+    #     if len(old_stack_resources) == 0:
+    #         return False
 
-        return len(self._filter_for_lambda_function(stack_info)) > 0
+    #     return len(self._filter_for_lambda_function(stack_info)) > 0
 
     # def test_stack(self, stack_id):
     #     stack_resources = self._get_stack_resources(stack_id)
@@ -153,8 +163,11 @@ class Stacks:
     #     return False
 
     # TODO - naming
-    def _get_stack_ids_from_lookup(self):
-        stack_summaries = self._get_stack_summaries()
+    def _adapt_stack_ids_from_aws(self):
+        """
+        Adapter: query AWS for active Stacks
+        """
+        stack_summaries = self._adapt_stack_summaries_from_aws()
         if stack_summaries == None:
             return
         stack_ids = self._get_stack_ids(stack_summaries)
@@ -163,12 +176,12 @@ class Stacks:
     # def _get_problem_stacks(self, stack_ids):
     #     return [stack for stack in stack_ids if self.test_stack(stack)]
 
-    def _get_problem_stacks_new(self, stack_details):
-        return [
-            stack_info["stackId"]
-            for stack_info in stack_details
-            if (self._has_outdated_custom_resources(stack_info))
-        ]
+    # def _get_problem_stacks_new(self, stack_details):
+    #     return [
+    #         stack_info["stackId"]
+    #         for stack_info in stack_details
+    #         if (self._has_outdated_custom_resources(stack_info))
+    #     ]
 
     @deprecation.deprecated(
         details="This function has been replaced by get_problem_report() and shall be removed."
@@ -207,9 +220,12 @@ class Stacks:
         # This may return false positives
         return "python" in template_body
 
-    def _get_stack_info(self):
+    def _port_stack_info_from_aws(self):
         """
-        Retrieves stack information from the running AWS environment for all active stacks.
+        Port: Return stack information from the running AWS environment for all active stacks.
+
+        This could be refactored into a true Port/Adapter pattern using classes.
+        The current method calls would become implementation detail of the AWS Adapter
 
         returns a structure like:
         [
@@ -221,9 +237,9 @@ class Stacks:
         ...]
         """
 
-        stack_ids = self._get_stack_ids_from_lookup()
+        stack_ids = self._adapt_stack_ids_from_aws()
         stacks_with_resources = self.get_resources_for_stack_ids(stack_ids)
-        stacks_with_templates = self.get_templates_for_stack_ids(stack_ids)
+        stacks_with_templates = self._adapt_templates_for_stack_ids(stack_ids)
 
         combined = list(zip(stack_ids, stacks_with_resources, stacks_with_templates))
 
@@ -301,7 +317,7 @@ class Stacks:
         ]
 
     def get_problem_report(self):
-        stack_info = self._get_stack_info()
+        stack_info = self._port_stack_info_from_aws()
         function_report = self.create_function_report(stack_info)
         # maintain an ordered list of stack IDs for consistency
         stack_ids = collections.OrderedDict(

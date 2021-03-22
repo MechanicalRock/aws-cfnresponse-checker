@@ -19,7 +19,7 @@ def main():
 
     stack = Stacks(client)
 
-    stack_summaries = stack._get_stack_summaries()
+    stack_summaries = stack._adapt_stack_summaries_from_aws()
     sample_stack = [x for x in stack_summaries if x['StackName'] == 'cfnresponsechecker-out-of-date-stack'][0]
 
     print("list_stacks response:")
@@ -31,7 +31,7 @@ def main():
     print(json.dumps(stack_resources, default=str))
     print('=====================')
 
-    template = stack._get_template(sample_stack['StackId'])
+    template = stack._adapt_template(sample_stack['StackId'])
     print("stack_template response:")
     print(json.dumps(template, default=str))
     print('=====================')
