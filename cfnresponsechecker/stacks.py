@@ -118,35 +118,35 @@ class Stacks:
         stack_ids = self._get_stack_ids(stack_summaries)
         return stack_ids
 
-    def test_functions(self, stack_info):
-        stack_id = stack_info["stackId"]
-        stack_resources = stack_info["resources"]
-        template_body = stack_info["templateBody"]
+    # def test_functions(self, stack_info):
+    #     stack_id = stack_info["stackId"]
+    #     stack_resources = stack_info["resources"]
+    #     template_body = stack_info["templateBody"]
 
-        if stack_resources == None:
-            logging.debug(f"No resources found for {stack_id}")
-            return
+    #     if stack_resources == None:
+    #         logging.debug(f"No resources found for {stack_id}")
+    #         return
 
-        custom_resources = [
-            resource
-            for resource in stack_resources
-            if self._has_custom_resource(resource)
-        ]
-        if len(custom_resources) == 0:
-            return False
+    #     custom_resources = [
+    #         resource
+    #         for resource in stack_resources
+    #         if self._has_custom_resource(resource)
+    #     ]
+    #     if len(custom_resources) == 0:
+    #         return False
 
-        old_stack_resources = [
-            resource
-            for resource in stack_resources
-            if self._is_lambda_function(resource)
-        ]
+    #     old_stack_resources = [
+    #         resource
+    #         for resource in stack_resources
+    #         if self._is_lambda_function(resource)
+    #     ]
 
-        if len(old_stack_resources) == 0:
-            return False
+    #     if len(old_stack_resources) == 0:
+    #         return False
 
-        # is python mentioned at all in the template
-        # This may return false positives
-        return "python" in template_body
+    #     # is python mentioned at all in the template
+    #     # This may return false positives
+    #     return "python" in template_body
 
     def _port_stack_info_from_aws(self):
         """
@@ -254,14 +254,55 @@ class Stacks:
             if self._template_body_has_inline_vendored_usage(stack_info["templateBody"])
         ]
 
+    def _stack_has_out_of_date_lambdas(self,function_report_row, stack_details):
+        if len(function_report_row["functions"]) == 0:
+            return False
+
+        stack_id = function_report_row["stack"]
+        stack_resources = [stack_info["resources"] for stack_info in stack_details if stack_info["stackId"] == stack_id][0]
+        if stack_resources == None:
+            logging.debug(f"No resources found for {stack_id}")
+            return False
+
+        # custom_resources = [
+        #     resource
+        #     for resource in stack_resources
+        #     if self._has_custom_resource(resource)
+        # ]
+        # if len(custom_resources) == 0:
+        #     return False
+
+        old_stack_resources = [
+            resource
+            for resource in stack_resources
+            if self._out_of_date_lambda_function(resource)]
+
+        return len(old_stack_resources) > 0
+
+    def _stacks_with_out_of_date_lambdas(self, function_report, stack_details):
+        return [stack["stack"] for stack in function_report if self._stack_has_out_of_date_lambdas(stack, stack_details)]
+        # stack_resources = stack_info["resources"]
+        # template_body = stack_info["templateBody"]
+
+        # lambda_functions = [
+        #     resource
+        #     for resource in stack_resources
+        #     if (self._is_lambda_function(resource))
+        # ]
+
+
+        # stack_ids = collections.OrderedDict(
+        #     {report["stack"]: "" for report in function_report}
+        # ).keys()
+        # # _out_of_date_lambda_function
+        # return [stack_id for stack_id in stack_ids]
+
     def get_problem_report(self):
         stack_info = self._port_stack_info_from_aws()
         function_report = self.create_function_report(stack_info)
         # maintain an ordered list of stack IDs for consistency
-        stack_ids = collections.OrderedDict(
-            {report["stack"]: "" for report in function_report}
-        ).keys()
-        stack_report = [stack_id for stack_id in stack_ids]
+        
+        stack_report = self._stacks_with_out_of_date_lambdas(function_report, stack_info)
 
         inline_vendored_usage = self.create_inline_vendored_usage_report(stack_info)
         return {

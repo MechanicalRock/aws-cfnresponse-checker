@@ -133,4 +133,4 @@ def stub(stubber, mock_data, template_type="json", last_update_date=None):
         )
 
     stub = mock.Stub()
-    stub.init(stubber, template_type = template_type, CreationTime = last_update_date)
+    stub.init(stubber, template_type = template_type, CreationTime = creation_time)

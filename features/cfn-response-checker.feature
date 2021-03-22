@@ -107,9 +107,30 @@ Scenario: Inline custom resource uses vendored urllib
       }
       """
 
+Scenario: Stack was deployed recently
+  Given stack "my-stack" was last updated "2021-02-01" with json template "out_of_date_stack"
+  When I run cfn-response-checker.get_problem_report()
+  Then the problem report should return: 
+    """ 
+    {
+      "stacks": [],
+      "functions": [
+        {
+          "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa",
+          "functions": [
+            {
+              "logicalId": "MyCustomResourceLambda",
+              "code": "<inline>"
+            }
+          ]
+        }
+      ],
+      "inline_vendored_usage": []
+    }
+    """
+
 # Scenario: Custom resource references external lambda
 
-# Scenario: Stack is not out of date, but contains vendored reference
 
 # Scenario: Custom resources defined using "AWS::CloudFormation::CustomResource" type
 # Scenario: Custom resources defined using "Custom::" type
