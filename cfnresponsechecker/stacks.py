@@ -1,14 +1,12 @@
-from datetime import datetime
-import deprecation
-import logging
 import collections
+import logging
 import botocore
-from dateutil import tz
-from cfn_flip import to_json, load
 
+from datetime import datetime
+from dateutil import tz
+from cfn_flip import to_json, load, dump_json
 
 from cfnresponsechecker.utils import paginator
-import json
 
 OLD_RESOURCE_DATETIME = datetime(2020, 11, 23, tzinfo=tz.tzutc())
 
@@ -41,10 +39,12 @@ class Stacks:
         # Difference in behaviour between YAML and JSON :(
         template_response = self.client.get_template(StackName=stack_id)
         try:
-            parsed_template, _ = load(template_response['TemplateBody'])
-            template_response['TemplateBody'] = parsed_template
+            parsed_template, _ = load(template_response["TemplateBody"])
+            template_response["TemplateBody"] = parsed_template
         except TypeError as _:
-            logging.debug("Ignoring TypeError parsing TemplateBody - assuming it is already parsed JSON") 
+            logging.debug(
+                "Ignoring TypeError parsing TemplateBody - assuming it is already parsed JSON"
+            )
         return template_response
 
     def _is_lambda_function(self, resource):
@@ -108,61 +108,6 @@ class Stacks:
         except botocore.exceptions.ClientError as e:
             print(e)
 
-    # def _has_outdated_custom_resources(self, stack_info):
-    #     stack_id = stack_info["stackId"]
-    #     stack_resources = stack_info["resources"]
-    #     # backward compatability
-    #     template_body = json.dumps(stack_info["templateBody"])
-
-    #     if stack_resources == None:
-    #         logging.debug(f"No resources found for {stack_id}")
-    #         return
-
-    #     custom_resources = [
-    #         resource
-    #         for resource in stack_resources
-    #         if self._has_custom_resource(resource)
-    #     ]
-    #     if len(custom_resources) == 0:
-    #         return False
-
-    #     old_stack_resources = [
-    #         resource
-    #         for resource in stack_resources
-    #         if self._out_of_date_lambda_function(resource)
-    #     ]
-
-    #     if len(old_stack_resources) == 0:
-    #         return False
-
-    #     return len(self._filter_for_lambda_function(stack_info)) > 0
-
-    # def test_stack(self, stack_id):
-    #     stack_resources = self._get_stack_resources(stack_id)
-    #     if stack_resources == None:
-    #         return
-
-    #     custom_resources = [
-    #         resource
-    #         for resource in stack_resources
-    #         if self._has_custom_resource(resource)
-    #     ]
-    #     if len(custom_resources) == 0:
-    #         return False
-
-    #     old_stack_resources = [
-    #         resource for resource in stack_resources if self._out_of_date_lambda_function(resource)
-    #     ]
-    #     templates = [
-    #         self._get_template(stack_id)["TemplateBody"]
-    #         for resource in old_stack_resources
-    #     ]
-
-    #     for template in templates:
-    #         if "python" in template:
-    #             return True
-    #     return False
-
     def _adapt_stack_ids_from_aws(self):
         """
         Adapter: query AWS for active Stacks
@@ -172,23 +117,6 @@ class Stacks:
             return
         stack_ids = self._get_stack_ids(stack_summaries)
         return stack_ids
-
-    # def _get_problem_stacks(self, stack_ids):
-    #     return [stack for stack in stack_ids if self.test_stack(stack)]
-
-    # def _get_problem_stacks_new(self, stack_details):
-    #     return [
-    #         stack_info["stackId"]
-    #         for stack_info in stack_details
-    #         if (self._has_outdated_custom_resources(stack_info))
-    #     ]
-
-    # @deprecation.deprecated(
-    #     details="This function has been replaced by get_problem_report() and shall be removed."
-    # )
-    # def get_problem_stacks(self):
-    #     stack_ids = self._get_stack_ids_from_lookup()
-    #     return self._get_problem_stacks(stack_ids)
 
     def test_functions(self, stack_info):
         stack_id = stack_info["stackId"]
@@ -299,6 +227,10 @@ class Stacks:
             if is_python_lambda(logical_id_of(lambda_resource))
         ]
 
+    def _template_body_has_inline_vendored_usage(self, template_body_dict):
+        template_body = dump_json(template_body_dict)
+        return "botocore.vendored" in template_body
+
     def create_function_report(self, stack_details):
 
         unfiltered_stacks_with_functions = [
@@ -308,12 +240,18 @@ class Stacks:
             }
             for stack_info in stack_details
         ]
-        # filter for lambda functions
-
         return [
             stack
             for stack in unfiltered_stacks_with_functions
             if len(stack["functions"]) > 0
+        ]
+
+    def create_inline_vendored_usage_report(self, stack_details):
+
+        return [
+            stack_info["stackId"]
+            for stack_info in stack_details
+            if self._template_body_has_inline_vendored_usage(stack_info["templateBody"])
         ]
 
     def get_problem_report(self):
@@ -324,9 +262,10 @@ class Stacks:
             {report["stack"]: "" for report in function_report}
         ).keys()
         stack_report = [stack_id for stack_id in stack_ids]
-        # stack_ids = self._get_stack_ids_from_lookup()
+
+        inline_vendored_usage = self.create_inline_vendored_usage_report(stack_info)
         return {
             "stacks": stack_report,
-            # "stacks": self._get_problem_stacks_new(stack_info),
             "functions": function_report,
+            "inline_vendored_usage": inline_vendored_usage,
         }

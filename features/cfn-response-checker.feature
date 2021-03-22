@@ -17,7 +17,8 @@ Scenario Outline: Out of date stack with inline python custom resource
             }
           ]
         }
-      ]
+      ],
+      "inline_vendored_usage": []
     }
     """
 
@@ -33,7 +34,8 @@ Scenario: Out of date stack does not contain python lambdas
     """ 
     {
       "stacks": [],
-      "functions": []
+      "functions": [],
+      "inline_vendored_usage": []
     }
     """
     
@@ -44,18 +46,20 @@ Scenario: Stack does not contain any lambda functions
     """ 
     {
       "stacks": [],
-      "functions": []
+      "functions": [],
+      "inline_vendored_usage": []
     }
     """
 
-Scenario: Strack does not report any resources (invalid role)
+Scenario: Stack does not report any resources (invalid role)
   Given stack "my-stack" was last updated "2020-09-01" with json template "stack_no_resources_reported"
   When I run cfn-response-checker.get_problem_report()
   Then the problem report should return: 
     """ 
     {
       "stacks": [],
-      "functions": []
+      "functions": [],
+      "inline_vendored_usage": []
     }
     """
 
@@ -76,16 +80,36 @@ Scenario: External Lambda package
               }
             ]
           }
-        ]
+        ],
+        "inline_vendored_usage": []
       }
       """
-# Scenario: Inline custom resource uses vendored urllib
+
+Scenario: Inline custom resource uses vendored urllib
+  Given stack "my-stack" was last updated "2020-09-01" with yaml template "vendored_inline"
+    When I run cfn-response-checker.get_problem_report()
+    Then the problem report should return: 
+      """ 
+      {
+        "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-dddd"],
+        "functions": [
+          {
+            "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-dddd",
+            "functions": [
+              {
+                "logicalId": "MyCustomResourceLambda",
+                "code": "<inline>"
+              }
+            ]
+          }
+        ],
+        "inline_vendored_usage": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-dddd"]
+      }
+      """
 
 # Scenario: Custom resource references external lambda
 
 # Scenario: Stack is not out of date, but contains vendored reference
-
-# Scenario: Externally packaged custom resource
 
 # Scenario: Custom resources defined using "AWS::CloudFormation::CustomResource" type
 # Scenario: Custom resources defined using "Custom::" type
