@@ -13,7 +13,7 @@ def stub(
 ):
     # stubber = Stubber(cfn_client)
 
-    stack_id = f"arn:aws:cloudformation:{region}:123456789012:stack/cfnresponsechecker-out-of-date-stack/31b30580-87ad-11eb-8e6c-aaaaa"
+    stack_id = f"arn:aws:cloudformation:{region}:123456789012:stack/cfnresponsechecker-out-of-date-stack-nodejs/31b30580-87ad-11eb-8e6c-aaaab"
 
     # https://github.com/boto/botocore/issues/2069
     # Stubber expects queries to be made in a specific order
@@ -26,7 +26,7 @@ def stub(
 
 
 def _stub_list_stacks_response(stubber, stack_id, CreationTime):
-    stack_name = "cfnresponsechecker-out-of-date-stack"
+    stack_name = "cfnresponsechecker-out-of-date-stack-nodejs"
 
     mock_response = {
         "StackSummaries": [
@@ -67,7 +67,7 @@ def _stub_list_stack_resources_response(stubber, stack_id, CreationTime):
             },
             {
                 "LogicalResourceId": "MyCustomResourceLambda",
-                "PhysicalResourceId": "cfnresponsechecker-out-of-d-MyCustomResourceLambda-1KY0K077Z8ARZ",
+                "PhysicalResourceId": "cfnresponsechecker-out-of-d-MyCustomResourceLambda-1KY0K077Z8AAB",
                 "ResourceType": "AWS::Lambda::Function",
                 "LastUpdatedTimestamp": CreationTime,
                 "ResourceStatus": "CREATE_COMPLETE",
@@ -75,7 +75,7 @@ def _stub_list_stack_resources_response(stubber, stack_id, CreationTime):
             },
             {
                 "LogicalResourceId": "MyCustomResourceLambdaExecutionRole",
-                "PhysicalResourceId": "cfnresponsechecker-out-of-MyCustomResourceLambdaEx-9T28G06490XF",
+                "PhysicalResourceId": "cfnresponsechecker-out-of-MyCustomResourceLambdaEx-9T28G06490AC",
                 "ResourceType": "AWS::IAM::Role",
                 "LastUpdatedTimestamp": CreationTime,
                 "ResourceStatus": "CREATE_COMPLETE",
@@ -101,10 +101,10 @@ def _stub_get_template(stubber, stack_id):
         "TemplateBody": json.dumps(template_body_json),
         "StagesAvailable": ["Original", "Processed"],
         "ResponseMetadata": {
-            "RequestId": "a31f5380-73ad-4f7f-a440-aaaaaaaaaa",
+            "RequestId": "a31f5380-73ad-4f7f-a440-aaaaaaaaab",
             "HTTPStatusCode": 200,
             "HTTPHeaders": {
-                "x-amzn-requestid": "a31f5380-73ad-4f7f-a440-aaaaaaaaaa",
+                "x-amzn-requestid": "a31f5380-73ad-4f7f-a440-aaaaaaaaab",
                 "content-type": "text/xml",
                 "content-length": "1798",
                 "date": "Thu, 18 Mar 2021 09:36:17 GMT",

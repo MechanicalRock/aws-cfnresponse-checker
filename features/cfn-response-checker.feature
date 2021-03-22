@@ -21,7 +21,16 @@ Scenario: Out of date stack with inline python custom resource
     }
     """
 
-# Scenario: Out of date stack does not contain python lambdas
+Scenario: Out of date stack does not contain python lambdas
+  Given stack "my-stack" was last updated "2020-09-01" with template "out_of_date_stack-nodejs"
+  When I run cfn-response-checker.get_problem_report()
+  Then the problem report should return: 
+    """ 
+    {
+      "stacks": [],
+      "functions": []
+    }
+    """
 
 # Scenario: Inline custom resource uses vendored urllib
 

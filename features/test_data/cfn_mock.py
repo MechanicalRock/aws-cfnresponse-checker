@@ -2,7 +2,7 @@ import importlib
 from datetime import datetime
 from dateutil import tz
 
-def stub(cfn_client, mock_data, last_update_date=None):
+def stub(stubber, mock_data, last_update_date=None):
   """
   Dynamically stub a botocore cloudformation client based on mock responses in these subfolders.
   
@@ -17,4 +17,4 @@ def stub(cfn_client, mock_data, last_update_date=None):
   if(last_update_date):
     creation_time = datetime.strptime(last_update_date, '%Y-%m-%d').astimezone(tz.tzutc())
 
-  mock.stub(cfn_client, CreationTime=creation_time)
+  mock.stub(stubber, CreationTime=creation_time)

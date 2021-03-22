@@ -1,14 +1,11 @@
-# from pytest import assert_equals
-
 from cfnresponsechecker.stacks import Stacks
 from features.test_data.cfn_mock import stub
 
 import json
 
-@given(u'stack "my-stack" was last updated "2020-09-01" with template "out_of_date_stack"')
-def step_impl(context):
-    stub(context.cfn_client, 'out_of_date_stack', "2020-09-01")
-
+@given(u'stack "my-stack" was last updated "{last_updated}" with template "{template}"')
+def step_impl(context, last_updated, template):
+    stub(context.stubber, template, last_updated)
 
 @when(u'I run cfn-response-checker.get_problem_report()')
 def step_impl(context):

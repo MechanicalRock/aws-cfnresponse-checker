@@ -1,5 +1,6 @@
 import boto3
 from cfnresponsechecker.assume_role import Roles
+from cfnresponsechecker.stacks import Stacks
 from cfnresponsechecker.utils import get_accounts
 
 
@@ -9,7 +10,10 @@ def main(regions, role_arn, clean_print=False):
         if not clean_print:
             print(f"Region {region}")
         # TODO - refactor to use whole report - create a ProblemReport class
-        problem_stacks = role.get_problem_report(region)['stacks']
+        # problem_stacks = role.get_problem_report(region)['stacks']
+        client = role.create_cfn_client(region)
+        stack = Stacks(client)
+        problem_stacks =  stack.get_problem_report()['stacks']
         if problem_stacks:
             for stack in problem_stacks:
                 print(stack)
