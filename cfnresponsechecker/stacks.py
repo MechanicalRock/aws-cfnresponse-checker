@@ -66,6 +66,7 @@ class Stacks:
             )
         except botocore.exceptions.ClientError as e:
             print("Failed to query resources for stack: " + stack_id + ": " + str(e))
+            return []
 
     def get_resources_for_stack_ids(self, stack_ids):
         resources = [
@@ -162,7 +163,6 @@ class Stacks:
     #             return True
     #     return False
 
-    # TODO - naming
     def _adapt_stack_ids_from_aws(self):
         """
         Adapter: query AWS for active Stacks
@@ -183,9 +183,9 @@ class Stacks:
     #         if (self._has_outdated_custom_resources(stack_info))
     #     ]
 
-    @deprecation.deprecated(
-        details="This function has been replaced by get_problem_report() and shall be removed."
-    )
+    # @deprecation.deprecated(
+    #     details="This function has been replaced by get_problem_report() and shall be removed."
+    # )
     # def get_problem_stacks(self):
     #     stack_ids = self._get_stack_ids_from_lookup()
     #     return self._get_problem_stacks(stack_ids)
@@ -260,11 +260,11 @@ class Stacks:
         @lambda_code_resource - The Code property for an AWS::Lambda::Function
         @see https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html
         """
-        if lambda_code_resource["ZipFile"]:
+        if "ZipFile" in lambda_code_resource:
             return "<inline>"
-        if lambda_code_resource["ImageUri"]:
+        if "ImageUri" in lambda_code_resource:
             return lambda_code_resource["ImageUri"]
-        if lambda_code_resource["S3Bucket"]:
+        if "S3Bucket" in lambda_code_resource:
             bucket = lambda_code_resource["S3Bucket"]
             key = lambda_code_resource["S3Key"]
             return f"s3://{bucket}/{key}"

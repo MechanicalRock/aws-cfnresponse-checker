@@ -8,6 +8,11 @@ from cfn_flip import flip, to_yaml, to_json, load, dump_json, dump_yaml
 
 from abc import ABC, abstractmethod
 
+class CfnResponseError(Exception):
+    def __init__(self,error_code,error_message,http_status_code):
+        self.error_code=error_code
+        self.error_message=error_message
+        self.http_status_code=http_status_code
 
 class CfnStub(ABC):
     def __init__(self):
@@ -54,7 +59,14 @@ class CfnStub(ABC):
         mock_response = self.stack_resource_summaries()
 
         expected_params = {"StackName": self.stack_id()}
-        stubber.add_response("list_stack_resources", mock_response, expected_params)
+
+        if(type(mock_response) == CfnResponseError):
+            stubber.add_client_error("list_stack_resources",service_message=mock_response.error_message,
+            service_error_code=mock_response.error_code,
+            http_status_code=mock_response.http_status_code,
+            expected_params=expected_params)
+        else:
+            stubber.add_response("list_stack_resources", mock_response, expected_params)
 
     def _stub_get_template(self, stubber, stack_id, template_type="json"):
         with open(self.template_file(), "r") as template_file:

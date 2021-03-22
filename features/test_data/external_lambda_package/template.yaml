@@ -1,0 +1,40 @@
+Resources:
+  MyCustomResourceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  MyCustomResourceLambda: 
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Sample Custom Resource
+      Handler: index.handler
+      MemorySize: 128
+      Runtime: python3.6
+      Role: 
+        !GetAtt MyCustomResourceLambdaExecutionRole.Arn
+      Code:
+        S3Key: some/path-to-aaa.zip
+        S3Bucket: my-bucket
+
+  CustomResourceCube:
+    Type: Custom::Multiplier
+    Properties:
+      ServiceToken: !GetAtt MyCustomResourceLambda.Arn
+      Region: !Ref "AWS::Region"
+      Input: 5
+Outputs:
+  CustomResource2:
+    Value: !GetAtt CustomResourceCube.Data
+    Description: Output from a custom resource
