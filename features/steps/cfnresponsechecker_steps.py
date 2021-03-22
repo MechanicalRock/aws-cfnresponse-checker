@@ -3,9 +3,9 @@ from features.test_data.cfn_mock import stub
 
 import json
 
-@given(u'stack "my-stack" was last updated "{last_updated}" with template "{template}"')
-def step_impl(context, last_updated, template):
-    stub(context.stubber, template, last_updated)
+@given(u'stack "my-stack" was last updated "{last_updated}" with {template_type} template "{template}"')
+def step_impl(context, last_updated, template_type, template):
+    stub(context.stubber, template, template_type=template_type, last_update_date=last_updated)
 
 @when(u'I run cfn-response-checker.get_problem_report()')
 def step_impl(context):

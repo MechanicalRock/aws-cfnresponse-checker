@@ -4,6 +4,8 @@ import logging
 import collections
 import botocore
 from dateutil import tz
+from cfn_flip import to_json, load
+
 
 from cfnresponsechecker.utils import paginator
 import json
@@ -30,7 +32,16 @@ class Stacks:
         )
 
     def _get_template(self, stack_id):
-        return self.client.get_template(StackName=stack_id)
+        # https://github.com/boto/botocore/issues/1889
+        # Ensure that the TemplateBody is parsed.
+        # Difference in behaviour between YAML and JSON :(
+        template_response = self.client.get_template(StackName=stack_id)
+        try:
+            parsed_template, _ = load(template_response['TemplateBody'])
+            template_response['TemplateBody'] = parsed_template
+        except TypeError as e:
+            logging.debug("Ignoring TypeError parsing TemplateBody - assuming it is already parsed JSON") 
+        return template_response
 
     def _is_lambda_function(self, resource):
         deleted = resource["ResourceStatus"] == "DELETE_COMPLETE"
@@ -197,14 +208,18 @@ class Stacks:
         return "python" in template_body
 
     def _get_stack_info(self):
-        # Build structure like
-        # [
-        #   {
-        #     "stackId": "blah",
-        #     "resources": [...]
-        #     "templateBody": "..."
-        #   },
-        # ...]
+        """
+        Retrieves stack information from the running AWS environment for all active stacks.
+
+        returns a structure like:
+        [
+          {
+            "stackId": "id of an active stack",
+            "resources": [logical resources for the stack]
+            "templateBody": "JSON structure of the template used to create the stack"
+          },
+        ...]
+        """
 
         stack_ids = self._get_stack_ids_from_lookup()
         stacks_with_resources = self.get_resources_for_stack_ids(stack_ids)
@@ -216,7 +231,7 @@ class Stacks:
             {
                 "stackId": stack_id,
                 "resources": resources["resources"],
-                "templateBody": json.loads(template["template"]["TemplateBody"]),
+                "templateBody": template["template"]["TemplateBody"],
             }
             for (stack_id, resources, template) in combined
         ]
@@ -239,7 +254,6 @@ class Stacks:
             return f"s3://{bucket}/{key}"
 
     def _filter_for_lambda_function(self, stack_info):
-        # stack_id = stack_info["stackId"]
         stack_resources = stack_info["resources"]
         template_body = stack_info["templateBody"]
 
@@ -268,8 +282,6 @@ class Stacks:
             for lambda_resource in lambda_functions
             if is_python_lambda(logical_id_of(lambda_resource))
         ]
-
-    # def _has_lambda_function(self, stack_details):
 
     def create_function_report(self, stack_details):
 

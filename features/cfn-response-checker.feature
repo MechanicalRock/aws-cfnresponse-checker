@@ -1,7 +1,7 @@
 Feature: cfn-response-checker
 
-Scenario: Out of date stack with inline python custom resource
-  Given stack "my-stack" was last updated "2020-09-01" with template "out_of_date_stack"
+Scenario Outline: Out of date stack with inline python custom resource
+  Given stack "my-stack" was last updated "2020-09-01" with <template_type> template "<template>"
   When I run cfn-response-checker.get_problem_report()
   Then the problem report should return: 
     """ 
@@ -21,8 +21,13 @@ Scenario: Out of date stack with inline python custom resource
     }
     """
 
+Examples:
+  | template_type | template          |
+  | json          | out_of_date_stack |
+  | yaml          | out_of_date_stack |
+
 Scenario: Out of date stack does not contain python lambdas
-  Given stack "my-stack" was last updated "2020-09-01" with template "out_of_date_stack-nodejs"
+  Given stack "my-stack" was last updated "2020-09-01" with json template "out_of_date_stack-nodejs"
   When I run cfn-response-checker.get_problem_report()
   Then the problem report should return: 
     """ 
@@ -31,6 +36,8 @@ Scenario: Out of date stack does not contain python lambdas
       "functions": []
     }
     """
+    
+# Scenario: Stack does not contain any lambda functions
 
 # Scenario: Inline custom resource uses vendored urllib
 
