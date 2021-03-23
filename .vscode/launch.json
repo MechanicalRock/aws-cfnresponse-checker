@@ -1,0 +1,29 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "principle_account.py",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/principle_account.py",
+      "console": "integratedTerminal",
+      "args": ["--regions", "ap-southeast-2"]
+    },
+    {
+      "name": "AcceptanceTest",
+      "type": "python",
+      "request": "launch",
+      "module": "behave"
+    },
+    {
+      "name": "IntegrationTest",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest"
+    }
+  ]
+}
