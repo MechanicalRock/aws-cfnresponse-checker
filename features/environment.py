@@ -6,6 +6,7 @@ from botocore.stub import Stubber, ANY
 def before_all(context):
   create_stacks(context)
   context.cfn_response_report = {}
+  context.cfn_pretty_problem_report = {}
 
 def create_stacks(context):
   cfn = botocore.session.get_session().create_client("cloudformation")
