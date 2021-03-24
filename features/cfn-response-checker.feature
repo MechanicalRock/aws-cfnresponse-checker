@@ -152,23 +152,13 @@ Scenario: Custom resource references external lambda
       """
 
 Scenario: Recent deployed inline resource DOES NOT use botocore.vendored
-    Given stack "my-stack" was last updated "2020-09-01" with yaml template "not_vendored_inline"
+    Given stack "my-stack" was last updated "2021-01-01" with yaml template "not_vendored_inline"
     When I run cfn-response-checker.get_problem_report()
     Then the problem report should return: 
       """ 
       {
-        "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-not_vendored_inline/31b30580-87ad-11eb-8e6c-fffff"],
-        "function_report": [
-          {
-            "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-not_vendored_inline/31b30580-87ad-11eb-8e6c-fffff",
-            "functions": [
-              {
-                "logicalId": "MyCustomResourceLambda",
-                "code": "<inline>"
-              }
-            ]
-          }
-        ],
+        "stacks": [],
+        "function_report": [],
         "inline_vendored_usage": []
       }
       """
