@@ -15,7 +15,7 @@ Run these scripts from an environment with the correct permissions to assume the
 For example output, refer to [the feature file](features/cfn-response-reporter.feature).
 
 The tool can identify three things:
-- Stacks that have not been updated recently and **MUST** to be updated to continue working
+- Stacks that have not been updated recently and **MUST** be updated to continue working
 - Functions that use [inline](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-zipfile) code and refer to the deprecated library.  These **MUST** be updated.
 - Functions that use externally packaged lambda code.  These may/may not need to be updated - it is outside the scope of this tool to determine whether external function code needs updating.  But this tool should help to avoid things falling through the cracks.
 
