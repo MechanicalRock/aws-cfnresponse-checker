@@ -1,5 +1,17 @@
 Feature: cfn-response-checker
 
+Rules:
+  - only Python functions are problematic
+  - Inline lambda functions can be checked fully:
+    - Are they out of date?
+    - Do they reference the deprecated library?
+  - Externally packaged lambdas may need to be checked by the user:
+    - If it is out of date, it MUST be updated
+    - if it has been updated recently, flag that the code needs to be checked for issues
+  - Stacks that reference external custom resources should be flagged - we can't determine if they are safe or not.
+  - If inline lambdas use the deprecated library - they MUST be updated.
+
+
 Scenario Outline: Out of date stack with inline python custom resource
   Given stack "my-stack" was last updated "2020-09-01" with <template_type> template "<template>"
   When I run cfn-response-checker.get_problem_report()
