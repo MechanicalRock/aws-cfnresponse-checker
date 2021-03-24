@@ -195,4 +195,24 @@ Scenario: Custom resources defined using "AWS::CloudFormation::CustomResource" t
       }
       """
 
-# Scenario: Custom resources defined using "Custom::" type
+Scenario: Custom resources defined using "Custom::" type
+  Given stack "my-stack" was last updated "2020-09-01" with yaml template "custom_resource_custom::"
+    When I run cfn-response-checker.get_problem_report()
+    Then the problem report should return: 
+      """ 
+      {
+        "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-custom/31b30580-87ad-11eb-8e6c-hhhhh"],
+        "function_report": [
+          {
+            "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-custom/31b30580-87ad-11eb-8e6c-hhhhh",
+            "functions": [
+              {
+                "logicalId": "MyCustomResourceLambda",
+                "code": "<inline>"
+              }
+            ]
+          }          
+        ],
+        "inline_vendored_usage": []
+      }
+      """
