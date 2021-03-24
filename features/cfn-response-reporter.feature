@@ -41,7 +41,12 @@ Scenario: Create a pretty report
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-cccc
 
   The following stacks contain the use of deprecated `botocore.vendored` and MUST be updated:
-  To fix update the Runtime Property for the function in your CloudFormation template to Python 3.8
+  To fix:
+  - update the Runtime Property for the function in your CloudFormation template to Python 3.8
+  - Remove any references to `from botocore.vendored import requests`
+  - Install the `requests` library and add as a layer, or package your function externally (e.g. using AWS SAM) 
+    - https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-getting-started.html
+    - https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-layers.html
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-dddd
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-eeee
 
