@@ -13,8 +13,6 @@ def main(regions, role_name, accounts, clean_print=False):
         for region in regions:
             if not clean_print:
                 print(f"Region {region}")
-            #TODO - clean up dead code
-            # problem_stacks = role.get_problem_report(region)["stacks"]
             client = role.create_cfn_client(region)
             stack = Stacks(client)
             problem_report = stack.get_problem_report()

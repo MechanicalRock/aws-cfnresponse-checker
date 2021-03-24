@@ -13,17 +13,6 @@ class Roles:
         )
         self.credentials = assumed_role_object["Credentials"]
 
-    # def get_problem_stacks(self, region):
-    #     config = Config(region_name=region)
-    #     client = boto3.client(
-    #         "cloudformation",
-    #         config=config,
-    #         aws_access_key_id=self.credentials["AccessKeyId"],
-    #         aws_secret_access_key=self.credentials["SecretAccessKey"],
-    #         aws_session_token=self.credentials["SessionToken"],
-    #     )
-    #     stack = Stacks(client)
-    #     return stack.get_problem_stacks()
 
     def create_cfn_client(self,region):
         config = Config(region_name=region)
@@ -34,22 +23,7 @@ class Roles:
             aws_secret_access_key=self.credentials["SecretAccessKey"],
             aws_session_token=self.credentials["SessionToken"],
         )
-        # stack = Stacks(client)
-        # return stack.get_problem_report()
         return client
-
-
-    # def test_stack(self, region, stack_id):
-    #     config = Config(region_name=region)
-    #     client = boto3.client(
-    #         "cloudformation",
-    #         config=config,
-    #         aws_access_key_id=self.credentials["AccessKeyId"],
-    #         aws_secret_access_key=self.credentials["SecretAccessKey"],
-    #         aws_session_token=self.credentials["SessionToken"],
-    #     )
-    #     stack = Stacks(client)
-    #     return stack.test_stack(stack_id)
 
 
 def main(role, regions):
@@ -59,7 +33,6 @@ def main(role, regions):
         client = role.create_cfn_client(region)
         stack = Stacks(client)
         problem_stacks =  stack.get_problem_report()
-        # problem_stacks = role.get_problem_report(region)
         if problem_stacks and problem_stacks["stacks"]:
             for stack in problem_stacks:
                 print(stack)
