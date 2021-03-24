@@ -18,7 +18,7 @@ jobs:
         pipenv install --pre --dev
     - name: Run behavioural tests
       run: |
-      export AWS_DEFAULT_REGION=ap-southeast-2
-      behave
+        export AWS_DEFAULT_REGION=ap-southeast-2
+        behave
     - name: Run unit tests
       run: pytest
