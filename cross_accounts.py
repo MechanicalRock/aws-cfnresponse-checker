@@ -2,6 +2,7 @@ import boto3
 from cfnresponsechecker.assume_role import Roles
 from cfnresponsechecker.stacks import Stacks
 from cfnresponsechecker.utils import get_accounts
+from cfnresponsereporter.reporter import Reporter
 
 
 def main(regions, role_name, accounts, clean_print=False):
@@ -16,10 +17,9 @@ def main(regions, role_name, accounts, clean_print=False):
             # problem_stacks = role.get_problem_report(region)["stacks"]
             client = role.create_cfn_client(region)
             stack = Stacks(client)
-            problem_stacks =  stack.get_problem_report()['stacks']
-            if problem_stacks:
-                for stack in problem_stacks:
-                    print(stack)
+            problem_report = stack.get_problem_report()
+            if problem_report:
+                print(Reporter().pretty_problem_report(problem_report))
             elif not clean_print:
                 print("None Found")
 
