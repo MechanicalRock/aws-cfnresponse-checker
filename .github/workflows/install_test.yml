@@ -19,6 +19,6 @@ jobs:
     - name: Run behavioural tests
       run: |
         export AWS_DEFAULT_REGION=ap-southeast-2
-        behave
+        pipenv run behave
     - name: Run unit tests
-      run: pytest
+      run: pipenv run pytest
