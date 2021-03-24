@@ -14,8 +14,6 @@ def main():
     result = paginator(client, "list_stacks", "StackSummaries", {"StackStatusFilter": [
         'CREATE_COMPLETE','UPDATE_COMPLETE', 'UPDATE_ROLLBACK_FAILED','UPDATE_ROLLBACK_COMPLETE','IMPORT_ROLLBACK_COMPLETE', 'DELETE_FAILED'
     ]})
-    # result = paginator(client, "list_stacks", "StackSummaries")
-
 
     stack = Stacks(client)
 
