@@ -10,7 +10,20 @@ There are two modes:
 
 Run these scripts from an environment with the correct permissions to assume the account's role and perform read only operations on Cloudformation.
 
+## Output
+
+TBD - refer to feature files.
+~~~~
 Prints the stack id for every stack identified as an issue.
+
+## What does this find?
+This tool locates any stacks using lambda backed Custom Resources, where the lambda function is defined in the same stack
+
+## What does it NOT find?
+If your lambda functions are defined externally (e.g. in a separate CloudFormation stack), this tool cannot identify them directly.  It identifies the custom resources, but you will need to perform additional investigation to determine whether the lambda functions themselves are affected.
+
+If you package your lambda functions externally, opposed to [inline](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-zipfile) then this tool cannot determine if the function has been updated
+
 ## Setup
 
 Ensure that boto3 installed in a python3 environment

@@ -3,7 +3,7 @@ import json
 
 import pytest
 from cfnresponsechecker.assume_role import Roles
-
+from cfnresponsechecker.stacks import Stacks
 
 def parse_arn(arn):
     elements = arn.split(":")
@@ -31,6 +31,6 @@ for account in accounts:
 def test_account_stacks_are_safe(account):
 
     role = Roles(f"arn:aws:iam::{account['account_id']}:role/{account['role_name']}")
-    assert not role.get_problem_stacks(
-        account["region"],
-    )
+    cfn = role.create_cfn_client(account["region"])
+    stacks = Stacks(cfn)
+    assert not stacks.get_problem_report()["stacks"]

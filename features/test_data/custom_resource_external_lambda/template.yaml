@@ -1,0 +1,11 @@
+Resources:
+  CustomResourceCube:
+    Type: Custom::Multiplier
+    Properties:
+      ServiceToken: arn:aws:lambda:ap-southeast-2:123456789012:function:cfnresponsechecker-CustomRe-MyCustomResourceLambda-1D3SYWRNVRHV8
+      Region: !Ref "AWS::Region"
+      Input: 5
+Outputs:
+  CustomResource2:
+    Value: !GetAtt CustomResourceCube.Data
+    Description: Output from a custom resource
