@@ -52,7 +52,7 @@ class Stacks:
         function = resource["ResourceType"] == "AWS::Lambda::Function"
         return function and not deleted
 
-    def _out_of_date_lambda_function(self, resource):
+    def _is_out_of_date_lambda_function(self, resource):
         old = resource["LastUpdatedTimestamp"] <= self.old_resource_datetime
         return old and self._is_lambda_function(resource)
 
@@ -118,7 +118,6 @@ class Stacks:
         stack_ids = self._get_stack_ids(stack_summaries)
         return stack_ids
 
-
     def _port_stack_info_from_aws(self):
         """
         Port: Return stack information from the running AWS environment for all active stacks.
@@ -153,6 +152,9 @@ class Stacks:
 
         return cleaned
 
+    def _is_inline_lambda(self, lambda_code_resource):
+        return "ZipFile" in lambda_code_resource
+
     def _lambda_code_for_resource(self, lambda_code_resource):
         """
         Parameters:
@@ -173,15 +175,18 @@ class Stacks:
         template_resources = template_body["Resources"]
         for resource in stack_resources:
             resource_id = resource["LogicalResourceId"]
-            
+
             if not "Properties" in template_resources[resource_id]:
                 continue
             if not "ServiceToken" in template_resources[resource_id]["Properties"]:
                 continue
-            
-            if ":lambda:" in template_resources[resource_id]["Properties"]["ServiceToken"]:
-                external_lambdas.append({"logicalId":resource_id, "code": "external"})
-        
+
+            if (
+                ":lambda:"
+                in template_resources[resource_id]["Properties"]["ServiceToken"]
+            ):
+                external_lambdas.append({"logicalId": resource_id, "code": "external"})
+
         return external_lambdas
 
     def _filter_for_lambda_function(self, stack_info):
@@ -204,6 +209,14 @@ class Stacks:
             in template_body["Resources"][resource_id]["Properties"]["Runtime"]
         )
 
+        is_inline_lambda_that_has_been_fixed = (
+            lambda resource: self._is_inline_lambda(code_for_lambda(logical_id_of(resource))) 
+            and not self._is_out_of_date_lambda_function(resource)
+            and not self._template_body_has_inline_vendored_usage(
+                code_for_lambda(logical_id_of(resource))
+            )
+        )
+
         internal_lambdas = [
             {
                 "logicalId": logical_id_of(lambda_resource),
@@ -213,6 +226,7 @@ class Stacks:
             }
             for lambda_resource in lambda_functions
             if is_python_lambda(logical_id_of(lambda_resource))
+            and not is_inline_lambda_that_has_been_fixed(lambda_resource)
         ]
         return internal_lambdas + external_lambdas
 
@@ -243,12 +257,16 @@ class Stacks:
             if self._template_body_has_inline_vendored_usage(stack_info["templateBody"])
         ]
 
-    def _stack_has_out_of_date_lambdas(self,function_report_row, stack_details):
+    def _stack_has_out_of_date_lambdas(self, function_report_row, stack_details):
         if len(function_report_row["functions"]) == 0:
             return False
 
         stack_id = function_report_row["stack"]
-        stack_resources = [stack_info["resources"] for stack_info in stack_details if stack_info["stackId"] == stack_id][0]
+        stack_resources = [
+            stack_info["resources"]
+            for stack_info in stack_details
+            if stack_info["stackId"] == stack_id
+        ][0]
         if stack_resources == None:
             logging.debug(f"No resources found for {stack_id}")
             return False
@@ -256,18 +274,25 @@ class Stacks:
         old_stack_resources = [
             resource
             for resource in stack_resources
-            if self._out_of_date_lambda_function(resource)]
+            if self._is_out_of_date_lambda_function(resource)
+        ]
 
         return len(old_stack_resources) > 0
 
     def _stacks_with_out_of_date_lambdas(self, function_report, stack_details):
-        return [stack["stack"] for stack in function_report if self._stack_has_out_of_date_lambdas(stack, stack_details)]
+        return [
+            stack["stack"]
+            for stack in function_report
+            if self._stack_has_out_of_date_lambdas(stack, stack_details)
+        ]
 
     def get_problem_report(self):
         stack_info = self._port_stack_info_from_aws()
         function_report = self.create_function_report(stack_info)
-        
-        stack_report = self._stacks_with_out_of_date_lambdas(function_report, stack_info)
+
+        stack_report = self._stacks_with_out_of_date_lambdas(
+            function_report, stack_info
+        )
 
         inline_vendored_usage = self.create_inline_vendored_usage_report(stack_info)
         return {
