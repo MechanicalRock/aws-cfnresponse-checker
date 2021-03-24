@@ -173,16 +173,26 @@ Scenario: Recent deployed inline resource DOES NOT use botocore.vendored
       }
       """
 
-# Scenario: Custom resources defined using "AWS::CloudFormation::CustomResource" type
-#   Given stack "my-stack" was last updated "2020-09-01" with yaml template "custom_resource_cloud_formation"
-#     When I run cfn-response-checker.get_problem_report()
-#     Then the problem report should return: 
-#       """ 
-#       {
-#         "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-cloud_formation/31b30580-87ad-11eb-8e6c-ggggg"],
-#         "function_report": [],
-#         "inline_vendored_usage": []
-#       }
-#       """
+Scenario: Custom resources defined using "AWS::CloudFormation::CustomResource" type
+  Given stack "my-stack" was last updated "2020-09-01" with yaml template "custom_resource_cloud_formation"
+    When I run cfn-response-checker.get_problem_report()
+    Then the problem report should return: 
+      """ 
+      {
+        "stacks": ["arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-cloud_formation/31b30580-87ad-11eb-8e6c-ggggg"],
+        "function_report": [
+          {
+            "stack": "arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-cloud_formation/31b30580-87ad-11eb-8e6c-ggggg",
+            "functions": [
+              {
+                "logicalId": "MyCustomResourceLambda",
+                "code": "<inline>"
+              }
+            ]
+          }          
+        ],
+        "inline_vendored_usage": []
+      }
+      """
 
 # Scenario: Custom resources defined using "Custom::" type
