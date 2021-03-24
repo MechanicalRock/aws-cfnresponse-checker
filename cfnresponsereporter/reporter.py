@@ -28,6 +28,9 @@ class Reporter:
         return headers + '\n' + table_data+'\n'   
 
     def pretty_problem_report(self, problem_report):
+        if not problem_report["stacks"] and not problem_report["function_report"] and not problem_report["inline_vendored_usage"]:
+            return "None found"
+
         return f'''The following stacks are out of date and need to be re-deployed:
 To fix add a comment to the inline code in your CloudFormation template.
 {self._pretty_list(problem_report["stacks"])}

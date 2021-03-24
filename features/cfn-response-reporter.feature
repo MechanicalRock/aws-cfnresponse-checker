@@ -57,3 +57,18 @@ Scenario: Create a pretty report
   | arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-eeee | MyCustomResourceLambda3 | <inline> |
   
   """
+
+Scenario: Create no report if respose report is empty
+  Given the following response report:
+  """
+  {
+        "stacks": [],
+        "function_report": [],
+        "inline_vendored_usage": []
+  }
+  """
+  When the cfn-response-reporter is run
+  Then the following report should be generated:
+  """
+  None found
+  """
