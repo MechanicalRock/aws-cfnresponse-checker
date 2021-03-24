@@ -28,13 +28,12 @@ class Reporter:
         return headers + '\n' + table_data+'\n'   
 
     def pretty_problem_report(self, problem_report):
-        problem_report = json.loads(problem_report)
         return f'''The following stacks are out of date and need to be re-deployed:
-<instructions here...>
+To fix add a comment to the inline code in your CloudFormation template.
 {self._pretty_list(problem_report["stacks"])}
 
 The following stacks contain the use of deprecated `botocore.vendored` and MUST be updated:
-<instructions here>
+To fix update the Runtime Property for the function in your CloudFormation template to Python 3.8
 {self._pretty_list(problem_report["inline_vendored_usage"])}
 
 The following stacks contain Python functions.  These could not be evaluated, but should be reviewed for deprecated usage:

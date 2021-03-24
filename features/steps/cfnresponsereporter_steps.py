@@ -4,7 +4,7 @@ from cfnresponsereporter.reporter import Reporter
 
 @given(u'the following response report')
 def step_impl(context):
-    context.cfn_response_report = json.dumps(json.loads(context.text))
+    context.cfn_response_report = json.loads(context.text)
 
 @when(u'the cfn-response-reporter is run')
 def step_impl(context):

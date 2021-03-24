@@ -36,12 +36,12 @@ Scenario: Create a pretty report
   Then the following report should be generated:
   """
   The following stacks are out of date and need to be re-deployed:
-  <instructions here...>
+  To fix add a comment to the inline code in your CloudFormation template.
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-bbbb
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-cccc
 
   The following stacks contain the use of deprecated `botocore.vendored` and MUST be updated:
-  <instructions here>
+  To fix update the Runtime Property for the function in your CloudFormation template to Python 3.8
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-dddd
   - arn:aws:cloudformation:ap-southeast-2:123456789012:stack/cfnresponsechecker-vendored_inline/31b30580-87ad-11eb-8e6c-eeee
 
