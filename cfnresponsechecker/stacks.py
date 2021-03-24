@@ -197,10 +197,27 @@ class Stacks:
             key = lambda_code_resource["S3Key"]
             return f"s3://{bucket}/{key}"
 
+    def _get_external_lambdas(self, stack_resources, template_body):
+        external_lambdas = []
+        template_resources = template_body["Resources"]
+        for resource in stack_resources:
+            resource_id = resource["LogicalResourceId"]
+            
+            if not "Properties" in template_resources[resource_id]:
+                continue
+            if not "ServiceToken" in template_resources[resource_id]["Properties"]:
+                continue
+            
+            if ":lambda:" in template_resources[resource_id]["Properties"]["ServiceToken"]:
+                external_lambdas.append({"logicalId":resource_id, "code": "external"})
+        
+        return external_lambdas
+
     def _filter_for_lambda_function(self, stack_info):
         stack_resources = stack_info["resources"]
         template_body = stack_info["templateBody"]
 
+        external_lambdas = self._get_external_lambdas(stack_resources, template_body)
         lambda_functions = [
             resource
             for resource in stack_resources
@@ -216,7 +233,7 @@ class Stacks:
             in template_body["Resources"][resource_id]["Properties"]["Runtime"]
         )
 
-        return [
+        internal_lambdas = [
             {
                 "logicalId": logical_id_of(lambda_resource),
                 "code": self._lambda_code_for_resource(
@@ -226,6 +243,7 @@ class Stacks:
             for lambda_resource in lambda_functions
             if is_python_lambda(logical_id_of(lambda_resource))
         ]
+        return internal_lambdas + external_lambdas
 
     def _template_body_has_inline_vendored_usage(self, template_body_dict):
         template_body = dump_json(template_body_dict)
@@ -307,6 +325,6 @@ class Stacks:
         inline_vendored_usage = self.create_inline_vendored_usage_report(stack_info)
         return {
             "stacks": stack_report,
-            "functions": function_report,
+            "function_report": function_report,
             "inline_vendored_usage": inline_vendored_usage,
         }

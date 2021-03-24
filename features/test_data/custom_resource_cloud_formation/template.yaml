@@ -1,0 +1,44 @@
+Resources:
+  MyCustomResourceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  MyCustomResourceLambda: 
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Sample Custom Resource
+      Handler: index.handler
+      MemorySize: 128
+      Runtime: python3.6
+      Role: 
+        !GetAtt MyCustomResourceLambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          def handler(event, context):
+            responseValue = int(event['ResourceProperties']['Input']) * 5
+            responseData = {}
+            responseData['Data'] = responseValue
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, "CustomResourcePhysicalID")
+
+  CustomResourceCube:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt MyCustomResourceLambda.Arn
+  Outputs:
+    CustomResource2:
+      Value: !GetAtt CustomResourceCube.Data
+      Description: Output from a custom resource

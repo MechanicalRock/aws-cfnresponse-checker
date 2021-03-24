@@ -23,7 +23,7 @@ class Reporter:
         length_of_longest_names = self._length_of_longest_names(function_report)
         stack_width, function_width, code_width = length_of_longest_names
         headers = f'| {"Stack": <{stack_width}} | {"Function": <{function_width}} | {"Code": <{code_width}} |'
-        table_data = ('').join(map(lambda stack: self._pretty_function(stack, length_of_longest_names), function_report))
+        table_data = ('\n').join(map(lambda stack: self._pretty_function(stack, length_of_longest_names), function_report))
         
         return headers + '\n' + table_data+'\n'   
 
@@ -38,4 +38,4 @@ The following stacks contain the use of deprecated `botocore.vendored` and MUST 
 {self._pretty_list(problem_report["inline_vendored_usage"])}
 
 The following stacks contain Python functions.  These could not be evaluated, but should be reviewed for deprecated usage:
-{self._pretty_function_report(problem_report["functions"])}'''
+{self._pretty_function_report(problem_report["function_report"])}'''

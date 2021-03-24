@@ -56,7 +56,7 @@ class Stub(CfnStub):
         }
 
     def stack_name(self):
-        return "cfnresponsechecker-out-of-date-stack-nodejs"
+        return "cfnresponsechecker-out_of_date_stack_nodejs"
 
     def template_file(self):
         return path.join(path.dirname(__file__), "template.yaml")

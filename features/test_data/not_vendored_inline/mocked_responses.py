@@ -8,7 +8,7 @@ from features.test_data.cfn_mock import CfnStub
 
 class Stub(CfnStub):
     def stack_id(self):
-        return f"arn:aws:cloudformation:{self.region}:123456789012:stack/{self.stack_name()}/31b30580-87ad-11eb-8e6c-aaaaa"
+        return f"arn:aws:cloudformation:{self.region}:123456789012:stack/{self.stack_name()}/31b30580-87ad-11eb-8e6c-fffff"
 
     def stack_summaries_response(self):
         return {
@@ -55,7 +55,7 @@ class Stub(CfnStub):
         }
 
     def stack_name(self):
-        return "cfnresponsechecker-out_of_date_stack"
+        return "cfnresponsechecker-not_vendored_inline"
 
     def template_file(self):
         return path.join(path.dirname(__file__), "template.yaml")

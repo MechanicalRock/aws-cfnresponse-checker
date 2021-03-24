@@ -8,7 +8,7 @@ from features.test_data.cfn_mock import CfnStub
 
 class Stub(CfnStub):
     def stack_id(self):
-        return f"arn:aws:cloudformation:{self.region}:123456789012:stack/{self.stack_name()}/31b30580-87ad-11eb-8e6c-aaaaa"
+        return f"arn:aws:cloudformation:{self.region}:123456789012:stack/{self.stack_name()}/31b30580-87ad-11eb-8e6c-eeeee"
 
     def stack_summaries_response(self):
         return {
@@ -34,28 +34,12 @@ class Stub(CfnStub):
                 "LastUpdatedTimestamp": self.CreationTime,
                 "ResourceStatus": "CREATE_COMPLETE",
                 "DriftInformation": {"StackResourceDriftStatus": "NOT_CHECKED"},
-            },
-            {
-                "LogicalResourceId": "MyCustomResourceLambda",
-                "PhysicalResourceId": "cfnresponsechecker-out-of-d-MyCustomResourceLambda-1KY0K077Z8ARZ",
-                "ResourceType": "AWS::Lambda::Function",
-                "LastUpdatedTimestamp": self.CreationTime,
-                "ResourceStatus": "CREATE_COMPLETE",
-                "DriftInformation": {"StackResourceDriftStatus": "NOT_CHECKED"},
-            },
-            {
-                "LogicalResourceId": "MyCustomResourceLambdaExecutionRole",
-                "PhysicalResourceId": "cfnresponsechecker-out-of-MyCustomResourceLambdaEx-9T28G06490XF",
-                "ResourceType": "AWS::IAM::Role",
-                "LastUpdatedTimestamp": self.CreationTime,
-                "ResourceStatus": "CREATE_COMPLETE",
-                "DriftInformation": {"StackResourceDriftStatus": "NOT_CHECKED"},
-            },
+            }
             ]
         }
 
     def stack_name(self):
-        return "cfnresponsechecker-out_of_date_stack"
+        return "cfnresponsechecker-custom_resource_external_lambda"
 
     def template_file(self):
         return path.join(path.dirname(__file__), "template.yaml")
